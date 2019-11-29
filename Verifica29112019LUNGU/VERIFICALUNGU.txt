@@ -1,0 +1,104 @@
+VERIFICA:29/11/2019
+
+1)Visualizzare i dati dei clienti che hanno effettuato noleggi di auto marca “Fiat” nel periodo
+ estivo (da giugno a settembre) del 2019.
+
+SELECT clienti.*
+FROM clienti,veicoli,prenotazioni
+WHERE prenotazioni.CodCliente=clienti.IdCliente
+AND prenotazioni.CodVeicolo=veicoli.idVeicolo
+AND idVeicolo IN (SELECT idVeicolo
+			FROM veicoli,prenotazioni
+			WHERE veicoli.Marca="FIAT"
+			AND DataInizio>2019/06/01
+			AND DataFine<2019/09/01)
+
+
+2)Visualizzare lo storico** di tutti i noleggi, compreso sia il cognome e il nome del cliente che quello 
+del dipendente che ha inserito la prenotazione.
+**Per lo storico lavorare sulle date e non sul campo ‘statoP’.
+
+
+SELECT statoP,clienti.Nome,clienti.Cognome,utenti.Nome,utenti.Cognome
+FROM clienti,prenotazioni,utenti
+WHERE  prenotazioni.codCliente = clienti.idcliente
+AND  prenotazioni.codUtente = utenti.idUtente
+AND DataFine<CURRENT_DATE
+
+3)Visualizzare  le auto (codice, modello, marca) non  prenotabili.
+
+SELECT veicoli.IdVeicolo,veicoli.modello,veicoli.marca
+FROM veicoli,prenotazioni
+WHERE prenotazioni.codVeicolo=veicoli.idVeicolo
+AND DataFine<CURRENT_DATE
+
+4)Visualizzare per ogni auto la somma complessiva del ‘totaleCosti’ 
+nei noleggi effettuati.
+
+SELECT modello, SUM(totaleCosti) AS totaliCosti
+FROM veicoli,prenotazioni
+WHERE prenotazioni.CodVeicolo=veicoli.IdVeicolo
+GROUP BY modello
+
+5)Visualizzare gli autoveicoli per marca e modello ordinati in modo 
+decrescente in base ai km
+
+SELECT Marca,Modello,Km
+FROM veicoli
+ORDER BY (Km) DESC
+
+6)Visualizzare i veicoli (modello) ad almeno 4 posti che hanno una 
+portata minore della portata media.
+
+SELECT Modello
+FROM veicoli
+WHERE Posti=4
+AND Portata <(SELECT AVG(Portata)
+		FROM veicoli)
+		
+
+7)Visualizzare i dipendenti (cognome, nome) che hanno  effettuato
+ almeno 3 prenotazioni nell’anno in corso.
+
+SELECT Cognome,Nome
+FROM utenti,prenotazioni
+WHERE prenotazioni.CodUtente=utenti.IdUtente
+AND codUtente=3
+AND DataInizio=2019/01/01
+
+8)Aggiornare, relativamente alle auto attualmente noleggiate, uno
+sconto del 15% sul costoTotale solo per i clienti  ‘affezionati’alla 
+concessionaria,cioè che abbiano iniziatoa fare dei noleggi da almeno due anni.
+
+
+9)Aggiornare le località (residenza) dei clienti di Varano Melegari e Fornovo 
+inserendo le dizioni corrette Varano de’ Marchesi e Fornovo di Taro.
+
+UPDATE clienti 
+SET Residenza = "Varano de' Marchesi"
+WHERE Residenza ="Varano";
+UPDATE clienti
+SET Residenza ="Fornovo di Taro"
+WHERE Residenza ="Fornovo"
+
+10)Visualizzare nome e cognome dei clienti che hanno effettuato più noleggi 
+e di quelli che  hanno effettuati meno noleggi.
+
+SELECT cognome,nome
+FROM prenotazioni,clienti
+GRoup BY CodVeicolo
+HAVING (COUNT(*)=(SELECT COUNT(*) AS numMax
+			FROM prenotazioni,clienti
+      			 WHERE prenotazioni.CodCliente=clienti.IdCliente
+ 			ORDER BY COUNT(*) DESC Limit 1))
+OR 	(COUNT(*)=(SELECT COUNT(*) AS numMin
+			FROM prenotazioni,clienti
+      			 WHERE prenotazioni.codCliente=clienti.IdCliente
+ 			ORDER BY COUNT(*) ASC Limit 1))
+
+
+
+
+
+
+
